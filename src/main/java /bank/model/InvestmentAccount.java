@@ -18,4 +18,3 @@ public class InvestmentAccount extends Account {
         return getBalance() * 0.05; // 5% monthly
     }
 }
-

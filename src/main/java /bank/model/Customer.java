@@ -26,4 +26,3 @@ public class Customer {
         return this.password.equals(inputPassword);
     }
 }
-

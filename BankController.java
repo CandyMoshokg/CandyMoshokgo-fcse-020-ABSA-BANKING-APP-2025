@@ -1,0 +1,66 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class BankController {
+    private List<Customer> customers;
+    private List<Account> accounts;
+    
+    public BankController() {
+        this.customers = new ArrayList<>();
+        this.accounts = new ArrayList<>();
+        
+        // Add test data
+        setupTestData();
+    }
+    
+    private void setupTestData() {
+        Customer customer1 = new Customer("C001", "John", "Doe", "123 Main St", "pass1");
+        Customer customer2 = new Customer("C002", "Jane", "Smith", "456 Oak Ave", "pass2");
+        
+        customers.add(customer1);
+        customers.add(customer2);
+        
+        SavingsAccount savings = new SavingsAccount("SA001", 1000.0, "Main Branch", customer1);
+        InvestmentAccount investment = new InvestmentAccount("INV001", 600.0, "Main Branch", customer1);
+        ChequeAccount cheque = new ChequeAccount("CH001", 2000.0, "Main Branch", customer2, "ABC Company", "789 Business St");
+        
+        accounts.add(savings);
+        accounts.add(investment);
+        accounts.add(cheque);
+        
+        // Link accounts to customers
+        customer1.addAccount(savings);
+        customer1.addAccount(investment);
+        customer2.addAccount(cheque);
+    }
+    
+    public Customer login(String customerId, String password) {
+        for (Customer customer : customers) {
+            if (customer.getCustomerId().equals(customerId) && 
+                customer.checkPassword(password)) {
+                return customer;
+            }
+        }
+        return null; // Login failed
+    }
+    
+    public List<Account> getCustomerAccounts(Customer customer) {
+        List<Account> customerAccounts = new ArrayList<>();
+        for (Account account : accounts) {
+            if (account.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+                customerAccounts.add(account);
+            }
+        }
+        return customerAccounts;
+    }
+    
+    // New method for deposits
+    public void depositToAccount(String accountNumber, double amount) {
+        for (Account account : accounts) {
+            if (account.getAccountNumber().equals(accountNumber)) {
+                account.deposit(amount);
+                break;
+            }
+        }
+    }
+}

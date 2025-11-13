@@ -5,18 +5,10 @@ public class SavingsAccount extends Account {
     
     @Override
     public void withdraw(double amount) {
-        // Savings account doesn't allow withdrawals
         throw new UnsupportedOperationException("Cannot withdraw from savings account");
     }
     
     public double calculateInterest() {
-        return getBalance() * 0.0005; // 0.05% monthly
+        return getBalance() * 0.0005;
     }
 }
-
-
-
-
-
-
-

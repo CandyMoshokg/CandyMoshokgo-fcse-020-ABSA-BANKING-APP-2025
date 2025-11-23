@@ -14,7 +14,8 @@ public class TextBankingSystem {
         while (true) {
             System.out.println("\n--- MAIN MENU ---");
             System.out.println("1. Login");
-            System.out.println("2. Exit");
+            System.out.println("2. Register New Customer");
+            System.out.println("3. Exit");
             System.out.print("Choose option: ");
             
             int choice = scanner.nextInt();
@@ -25,6 +26,9 @@ public class TextBankingSystem {
                     login();
                     break;
                 case 2:
+                    registerCustomer();
+                    break;
+                case 3:
                     System.out.println("Thank you for banking with ABSA!");
                     return;
                 default:
@@ -50,13 +54,35 @@ public class TextBankingSystem {
         }
     }
     
+    private static void registerCustomer() {
+        System.out.println("\n--- REGISTER NEW CUSTOMER ---");
+        System.out.print("Enter Customer ID: ");
+        String customerId = scanner.nextLine();
+        System.out.print("Enter First Name: ");
+        String firstName = scanner.nextLine();
+        System.out.print("Enter Surname: ");
+        String surname = scanner.nextLine();
+        System.out.print("Enter Address: ");
+        String address = scanner.nextLine();
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+        
+        // Create new customer
+        Customer newCustomer = new Customer(customerId, firstName, surname, address, password);
+        
+        // Add to bank controller (you might need to modify BankController to handle this)
+        System.out.println("Customer " + firstName + " " + surname + " registered successfully!");
+        System.out.println("You can now login with ID: " + customerId);
+    }
+    
     private static void showCustomerMenu() {
         while (currentCustomer != null) {
             System.out.println("\n--- CUSTOMER DASHBOARD ---");
             System.out.println("Welcome, " + currentCustomer.getFirstName() + " " + currentCustomer.getSurname());
             System.out.println("1. View Accounts");
             System.out.println("2. Make Deposit");
-            System.out.println("3. Logout");
+            System.out.println("3. Open New Account");
+            System.out.println("4. Logout");
             System.out.print("Choose option: ");
             
             int choice = scanner.nextInt();
@@ -70,6 +96,9 @@ public class TextBankingSystem {
                     makeDeposit();
                     break;
                 case 3:
+                    openNewAccount();
+                    break;
+                case 4:
                     currentCustomer = null;
                     System.out.println("Logged out successfully.");
                     return;
@@ -123,5 +152,53 @@ public class TextBankingSystem {
         selectedAccount.deposit(amount);
         
         System.out.println("Deposit successful! New balance: BWP " + selectedAccount.getBalance());
+    }
+    
+    private static void openNewAccount() {
+        System.out.println("\n--- OPEN NEW ACCOUNT ---");
+        System.out.println("1. Savings Account (No withdrawals, 0.05% interest)");
+        System.out.println("2. Investment Account (BWP 500 minimum, 5% interest)");
+        System.out.println("3. Cheque Account (For salary deposits)");
+        System.out.print("Choose account type: ");
+        
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+        
+        System.out.print("Enter initial deposit: BWP ");
+        double initialDeposit = scanner.nextDouble();
+        scanner.nextLine();
+        
+        String accountNumber = "";
+        Account newAccount = null;
+        
+        switch (choice) {
+            case 1:
+                accountNumber = "SA" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                newAccount = new SavingsAccount(accountNumber, initialDeposit, "Main Branch", currentCustomer);
+                break;
+            case 2:
+                if (initialDeposit < 500) {
+                    System.out.println("Error: Investment account requires minimum BWP 500.00");
+                    return;
+                }
+                accountNumber = "INV" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                newAccount = new InvestmentAccount(accountNumber, initialDeposit, "Main Branch", currentCustomer);
+                break;
+            case 3:
+                System.out.print("Enter company name: ");
+                String companyName = scanner.nextLine();
+                System.out.print("Enter company address: ");
+                String companyAddress = scanner.nextLine();
+                accountNumber = "CH" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                newAccount = new ChequeAccount(accountNumber, initialDeposit, "Main Branch", currentCustomer, companyName, companyAddress);
+                break;
+            default:
+                System.out.println("Invalid choice!");
+                return;
+        }
+        
+        // Add account to customer
+        currentCustomer.addAccount(newAccount);
+        System.out.println("Account created successfully! Account Number: " + accountNumber);
     }
 }

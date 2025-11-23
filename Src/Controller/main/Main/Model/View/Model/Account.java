@@ -19,7 +19,6 @@ public abstract class Account {
     
     public abstract void withdraw(double amount);
     
-    // Getters
     public String getAccountNumber() { return accountNumber; }
     public double getBalance() { return balance; }
     public String getBranch() { return branch; }

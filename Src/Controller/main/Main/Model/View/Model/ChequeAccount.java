@@ -17,7 +17,6 @@ public class ChequeAccount extends Account {
         setBalance(getBalance() - amount);
     }
     
-    // Getters
     public String getCompanyName() { return companyName; }
     public String getCompanyAddress() { return companyAddress; }
 }

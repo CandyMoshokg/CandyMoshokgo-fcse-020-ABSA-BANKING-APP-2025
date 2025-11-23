@@ -18,7 +18,6 @@ public class Customer {
         this.accounts = new ArrayList<>();
     }
     
-    // Getters
     public String getCustomerId() { return customerId; }
     public String getFirstName() { return firstName; }
     public String getSurname() { return surname; }
@@ -26,12 +25,10 @@ public class Customer {
     public String getPassword() { return password; }
     public List<Account> getAccounts() { return accounts; }
     
-    // Check if password is correct
     public boolean checkPassword(String inputPassword) {
         return this.password.equals(inputPassword);
     }
     
-    // Add account to customer
     public void addAccount(Account account) {
         accounts.add(account);
     }

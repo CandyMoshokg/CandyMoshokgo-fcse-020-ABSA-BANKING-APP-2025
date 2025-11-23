@@ -1,0 +1,364 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
+public class SimpleBankingGUI {
+    private static BankController bankController = new BankController();
+    private static Customer currentCustomer = null;
+    
+    private JFrame frame;
+    private JTextArea displayArea;
+    
+    public SimpleBankingGUI() {
+        createAndShowGUI();
+    }
+    
+    private void createAndShowGUI() {
+        // forms the main frame
+        frame = new JFrame("ABSA Banking System");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 800);
+        frame.setLocationRelativeTo(null);
+        
+        // does main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
+        
+        // does display area
+       displayArea = new JTextArea(190, 40);
+        displayArea.setEditable(false);
+      
+        displayArea.setMargin(new Insets(100, 800, 100, 500));
+        displayArea.setFont(new Font("Monospaced", Font.BOLD, 30));
+        JScrollPane scrollPane = new JScrollPane(displayArea);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        
+    
+        // forms buttons panel
+ 
+JPanel buttonPanel = new JPanel(new GridLayout(3, 150, 50, 200)); // 2 rows, 3 columns, 5px gaps
+        Dimension buttonSize = new Dimension(100, 50);
+
+        
+        JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
+        JButton viewAccountsButton = new JButton("View Accounts");
+        JButton depositButton = new JButton("Make Deposit");
+        JButton newAccountButton = new JButton("Open Account");
+        JButton logoutButton = new JButton("Logout");
+        
+        Color greenColor = new Color(0, 128, 0); // Dark green
+Color whiteColor = Color.WHITE;
+
+// Apply to all buttons
+JButton[] buttons = {loginButton, registerButton, viewAccountsButton, 
+                    depositButton, newAccountButton, logoutButton};
+
+for (JButton button : buttons) {
+    button.setBackground(greenColor);
+    button.setForeground(whiteColor);
+    button.setOpaque(true);
+    button.setBorderPainted(false); // Optional: removes border for cleaner look
+    button.setPreferredSize(buttonSize);
+}
+        
+        // Add action listeners
+        loginButton.addActionListener(e -> showLoginDialog());
+        registerButton.addActionListener(e -> showRegisterDialog());
+        viewAccountsButton.addActionListener(e -> showAccounts());
+        depositButton.addActionListener(e -> showDepositDialog());
+        newAccountButton.addActionListener(e -> showNewAccountDialog());
+        logoutButton.addActionListener(e -> logout());
+        
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+        buttonPanel.add(viewAccountsButton);
+        buttonPanel.add(depositButton);
+        buttonPanel.add(newAccountButton);
+        buttonPanel.add(logoutButton);
+        
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Add welcome message
+        displayArea.setText("ABSA BANKING SYSTEM\n\n"
+                          + "Welcome to ABSA Banking!\n\n"
+                          );
+        
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+    
+    private void showLoginDialog() {
+       
+        
+        JPanel panel = new JPanel(new GridLayout(3, 2, 8, 5));
+        JTextField idField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        
+        idField.setPreferredSize(new Dimension(150, 30));
+passwordField.setPreferredSize(new Dimension(400, 50));
+        
+        panel.add(new JLabel("Customer ID:"));
+        panel.add(idField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        
+ 
+        
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Login", 
+                                                  JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            String customerId = idField.getText();
+            String password = new String(passwordField.getPassword());
+            
+            currentCustomer = bankController.login(customerId, password);
+            
+            if (currentCustomer != null) {
+                displayArea.setText("Login successful! Welcome " + 
+                                  currentCustomer.getFirstName() + " " + 
+                                  currentCustomer.getSurname() + "\n\n" +
+                                  "Use the buttons below to manage your accounts.");
+            } else {
+                JOptionPane.showMessageDialog(frame, 
+                    "Login failed!\n\nTry:\nC001/pass1 (General Motaso)\nC002/pass2 ()");
+            }
+        }
+    }
+    
+    private void showRegisterDialog() {
+        JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));
+        JTextField idField = new JTextField();
+        JTextField firstNameField = new JTextField();
+        JTextField surnameField = new JTextField();
+        JTextField addressField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        
+        idField.setPreferredSize(new Dimension(300, 60));
+        passwordField.setPreferredSize(new Dimension(300, 30));
+        
+        panel.add(new JLabel("Customer ID:"));
+        panel.add(idField);
+        panel.add(new JLabel("First Name:"));
+        panel.add(firstNameField);
+        panel.add(new JLabel("Surname:"));
+        panel.add(surnameField);
+        panel.add(new JLabel("Address:"));
+        panel.add(addressField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Register Customer", 
+                                                  JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            Customer newCustomer = new Customer(idField.getText(), firstNameField.getText(),
+                                              surnameField.getText(), addressField.getText(),
+                                              new String(passwordField.getPassword()));
+            bankController.addCustomer(newCustomer);
+            
+            JOptionPane.showMessageDialog(frame, 
+                "Customer registered successfully!\n\nYou can now login with:\n" +
+                "ID: " + idField.getText() + "\nPassword: " + new String(passwordField.getPassword()));
+        }
+    }
+    
+    private void showAccounts() {
+        if (currentCustomer == null) {
+            JOptionPane.showMessageDialog(frame, "Please login first!");
+            return;
+        }
+        
+        List<Account> accounts = bankController.getCustomerAccounts(currentCustomer);
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("=== YOUR ACCOUNTS ===\n\n");
+        sb.append("Customer: ").append(currentCustomer.getFirstName())
+          .append(" ").append(currentCustomer.getSurname()).append("\n\n");
+        
+        if (accounts.isEmpty()) {
+            sb.append("No accounts found.\n");
+        } else {
+            for (int i = 0; i < accounts.size(); i++) {
+                Account account = accounts.get(i);
+                sb.append(i + 1).append(". ").append(account.getAccountNumber())
+                  .append(" - ").append(account.getClass().getSimpleName())
+                  .append("\n   Balance: BWP ").append(account.getBalance()).append("\n");
+                
+                if (account instanceof SavingsAccount) {
+                    double interest = ((SavingsAccount) account).calculateInterest();
+                    sb.append("   Monthly Interest: BWP ").append(String.format("%.2f", interest))
+                      .append(" (0.05%)\n");
+                } else if (account instanceof InvestmentAccount) {
+                    double interest = ((InvestmentAccount) account).calculateInterest();
+                    sb.append("   Monthly Interest: BWP ").append(String.format("%.2f", interest))
+                      .append(" (5%)\n");
+                }
+                sb.append("\n");
+            }
+            
+            double total = accounts.stream().mapToDouble(Account::getBalance).sum();
+            sb.append("TOTAL BALANCE: BWP ").append(total).append("\n");
+        }
+        
+        displayArea.setText(sb.toString());
+    }
+    
+    private void showDepositDialog() {
+        if (currentCustomer == null) {
+            JOptionPane.showMessageDialog(frame, "Please login first!");
+            return;
+        }
+        
+        List<Account> accounts = bankController.getCustomerAccounts(currentCustomer);
+        if (accounts.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No accounts available for deposit.");
+            return;
+        }
+        
+        String[] accountOptions = new String[accounts.size()];
+        for (int i = 0; i < accounts.size(); i++) {
+            Account account = accounts.get(i);
+            accountOptions[i] = account.getAccountNumber() + " - " + 
+                              account.getClass().getSimpleName() + " (BWP " + account.getBalance() + ")";
+        }
+        
+        JComboBox<String> accountCombo = new JComboBox<>(accountOptions);
+        JTextField amountField = new JTextField("100");
+   
+        JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
+        panel.add(new JLabel("Select Account:"));
+        panel.add(accountCombo);
+        panel.add(new JLabel("Amount (BWP):"));
+        panel.add(amountField);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Make Deposit", 
+                                                  JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int selectedIndex = accountCombo.getSelectedIndex();
+                double amount = Double.parseDouble(amountField.getText());
+                
+                if (amount <= 0) {
+                    JOptionPane.showMessageDialog(frame, "Amount must be positive");
+                    return;
+                }
+                
+                Account selectedAccount = accounts.get(selectedIndex);
+                selectedAccount.deposit(amount);
+                
+                JOptionPane.showMessageDialog(frame, 
+                    "Deposit successful!\nAccount: " + selectedAccount.getAccountNumber() +
+                    "\nAmount: BWP " + amount + 
+                    "\nNew Balance: BWP " + selectedAccount.getBalance());
+                
+                showAccounts(); // Refresh display
+                
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid number");
+            }
+        }
+    }
+    
+    private void showNewAccountDialog() {
+        if (currentCustomer == null) {
+            JOptionPane.showMessageDialog(frame, "Please login first!");
+            return;
+        }
+        
+        String[] types = {"Savings Account", "Investment Account", "Cheque Account"};
+        JComboBox<String> typeCombo = new JComboBox<>(types);
+        JTextField depositField = new JTextField("100");
+        JTextField companyField = new JTextField();
+        JTextField companyAddressField = new JTextField();
+        
+        JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));
+        panel.add(new JLabel("Account Type:"));
+        panel.add(typeCombo);
+        panel.add(new JLabel("Initial Deposit:"));
+        panel.add(depositField);
+        panel.add(new JLabel("Company Name:"));
+        panel.add(companyField);
+        panel.add(new JLabel("Company Address:"));
+        panel.add(companyAddressField);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        
+        // Initially hide company fields
+        companyField.setVisible(false);
+        companyAddressField.setVisible(false);
+        
+        typeCombo.addActionListener(e -> {
+            boolean showCompany = typeCombo.getSelectedIndex() == 2;
+            companyField.setVisible(showCompany);
+            companyAddressField.setVisible(showCompany);
+            panel.revalidate();
+        });
+        
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Open New Account", 
+                                                  JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int accountType = typeCombo.getSelectedIndex() + 1;
+                double initialDeposit = Double.parseDouble(depositField.getText());
+                String accountNumber = "";
+                Account newAccount = null;
+                
+                switch (accountType) {
+                    case 1: // Savings
+                        accountNumber = "SA" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                        newAccount = new SavingsAccount(accountNumber, initialDeposit, "Main Branch", currentCustomer);
+                        break;
+                    case 2: // Investment
+                        if (initialDeposit < 500) {
+                            JOptionPane.showMessageDialog(frame, "Investment account requires minimum BWP 500.00");
+                            return;
+                        }
+                        accountNumber = "INV" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                        newAccount = new InvestmentAccount(accountNumber, initialDeposit, "Main Branch", currentCustomer);
+                        break;
+                    case 3: // Cheque
+                        if (companyField.getText().trim().isEmpty()) {
+                            JOptionPane.showMessageDialog(frame, "Company name is required for cheque account");
+                            return;
+                        }
+                        accountNumber = "CH" + (bankController.getCustomerAccounts(currentCustomer).size() + 1);
+                        newAccount = new ChequeAccount(accountNumber, initialDeposit, "Main Branch", 
+                                                     currentCustomer, companyField.getText(), companyAddressField.getText());
+                        break;
+                }
+                
+                currentCustomer.addAccount(newAccount);
+                JOptionPane.showMessageDialog(frame, 
+                    "Account created successfully!\nAccount Number: " + accountNumber);
+                
+                showAccounts(); // Refresh display
+                
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid number for deposit");
+            }
+        }
+    }
+    
+    private void logout() {
+        currentCustomer = null;
+        displayArea.setText("=== ABSA BANKING SYSTEM ===\n\n"
+                          + "You have been logged out successfully.\n\n"
+                          + "Test Accounts:\n"
+                          + "C001 / pass1 (General Motaso)\n"
+                          + "C002 / pass2 (Jane Smith)");
+    }
+    
+    public static void main(String[] args) {
+        // Simple Swing invocation - no JavaFX, no complex look and feel
+        SwingUtilities.invokeLater(() -> {
+            new SimpleBankingGUI();
+        });
+    }
+}

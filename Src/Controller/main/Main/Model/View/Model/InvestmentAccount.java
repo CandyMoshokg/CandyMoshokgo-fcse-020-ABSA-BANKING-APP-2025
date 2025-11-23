@@ -15,6 +15,6 @@ public class InvestmentAccount extends Account {
     }
     
     public double calculateInterest() {
-        return getBalance() * 0.05; // 5% monthly
+        return getBalance() * 0.05;
     }
 }
